@@ -144,7 +144,7 @@ class Author_Collection_Work {
                 break;
 
             default:
-                throw new Author_Collection_ProjectException("Invalid project type.");
+                throw new Author_Collection_WorkException("Invalid work type.");
                 break;
         }
     }

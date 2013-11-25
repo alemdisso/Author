@@ -9,6 +9,7 @@ class Author_Collection_Work {
     protected $summary;
     protected $description;
     protected $type;
+    protected $theme;
 
     function __construct($id=0) {
         $this->id = (int)$id;
@@ -18,6 +19,7 @@ class Author_Collection_Work {
         $this->summary = "";
         $this->description = "";
         $this->type = null;
+        $this->theme = null;
     }
 
     public function getId() {
@@ -72,6 +74,23 @@ class Author_Collection_Work {
             throw new Author_Collection_WorkException("This ($summary) is not a valid summary.");
         }
     } //SetSummary
+
+    public function getTheme()
+    {
+        return $this->theme;
+    } //getTheme
+
+    public function setTheme($theme)
+    {
+        $validator = new Moxca_Util_ValidPositiveDecimal();
+        if ($validator->isValid($theme)) {
+            if ($this->theme != $theme) {
+                $this->theme = $theme;
+            }
+        } else {
+            throw new Moxca_Blog_PostException("This ($theme) is not a valid theme.");
+        }
+    } //SetTheme
 
     public function getTitle($raw = false)
     {

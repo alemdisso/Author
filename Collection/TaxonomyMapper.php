@@ -186,6 +186,27 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
+    public function worksWithTheme($theme)
+    {
+        $query = $this->db->prepare('SELECT tr.object
+                FROM moxca_terms_relationships tr
+                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
+                LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
+                WHERE tt.term = :theme
+                AND tx.taxonomy =  \'theme\'');
+
+        $query->bindValue(':theme', $theme, PDO::PARAM_STR);
+        $query->execute();
+
+        $resultPDO = $query->fetchAll();
+
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[] = $row['object'];
+        }
+        return $data;
+    }
+
 
 
 

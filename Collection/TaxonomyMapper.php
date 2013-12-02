@@ -149,11 +149,14 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 $toRemove = array_diff($formerCharacters, $newCharacters);
                 if ((is_array($toRemove)) && (count($toRemove))) {
                     foreach($toRemove as $k => $termId) {
-                        //$this->deleteRelationship($workId, $termId, 'character');
+                        if ($taxonomyId = $this->existsCharacter($termId)) {
+                            $this->deleteRelationship($workId, $termId, 'character');
+                            $this->decreaseTermTaxonomyCount($taxonomyId, 1);
+                        }
                     }
                 }
-                echo"<br>removendo:";
-                print_r($toRemove);
+//                echo"<br>removendo:";
+//                print_r($toRemove);
 
                 //descobre quais são novos
                 //    e inclui
@@ -164,8 +167,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                         $this->insertRelationship($workId, $termTaxonomyId);
                     }
                 }
-//                echo"<br>incluindo:";
-//                print_r($toRemove);
 
 
 //die();
@@ -415,7 +416,21 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         return $data;
     }
 
+    public function deleteCharacter($workId, $termId)
+    {
 
+        try {
+            if ($taxonomyId = $this->existsCharacter($termId)) {
+                $this->deleteRelationship($workId, $termId, 'character');
+                $this->decreaseTermTaxonomyCount($taxonomyId, 1);
+                return true;
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+        return false;
+
+    }
 
 
 

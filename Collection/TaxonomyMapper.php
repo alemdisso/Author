@@ -12,6 +12,22 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         $this->identityMap = new SplObjectStorage;
     }
 
+    public function insertCharacter($termId)
+    {
+
+        $query = $this->db->prepare("INSERT INTO moxca_terms_taxonomy (term_id, taxonomy, count)
+            VALUES (:termId, 'character', 0)");
+
+        $query->bindValue(':termId', $termId, PDO::PARAM_INT);
+
+        $query->execute();
+
+        return (int)$this->db->lastInsertId();
+
+
+    }
+
+
     public function insertTheme($termId)
     {
 
@@ -27,6 +43,67 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
+//    public function insertWorkThemeRelationShip(Author_Collection_Work $obj)
+//    {
+//        $newThemeTermId = $obj->getTheme();
+//        $workId = $obj->getId();
+//        $formerThemeTermId = $this->workHasTheme($workId);
+//        if (!$formerThemeTermId) {
+//            if ($newThemeTermId > 0) {
+//                $this->insertRelationship($workId, $newThemeTermId);
+//            }
+//        } else {
+//            if ($newThemeTermId != $formerThemeTermId) {
+//                $formerTermTaxonomy = $this->existsTheme($formerThemeTermId);
+//                $newTermTaxonomy = $this->createThemeIfNeeded($newThemeTermId);
+//
+//                $query = $this->db->prepare("UPDATE moxca_terms_relationships SET term_taxonomy = :newTheme"
+//                        . " WHERE object = :workId AND term_taxonomy = :formerTheme;");
+//
+//                $query->bindValue(':workId', $workId, PDO::PARAM_STR);
+//                $query->bindValue(':newTheme', $newTermTaxonomy, PDO::PARAM_STR);
+//                $query->bindValue(':formerTheme', $formerTermTaxonomy, PDO::PARAM_STR);
+//                $query->execute();
+//
+//
+//                $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count + 1
+//                    WHERE id = :termTaxonomy;");
+//                $query->bindValue(':termTaxonomy', $newTermTaxonomy, PDO::PARAM_STR);
+//                $query->execute();
+//
+//                $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count - 1
+//                    WHERE id = :termTaxonomy;");
+//                $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+//
+//                try {
+//                    $query->execute();
+//                } catch (Exception $e) {
+//                    $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = 0
+//                        WHERE id = :termTaxonomy;");
+//                    $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+//                }
+//            }
+//        }
+//
+//    }
+
+
+    public function existsCharacter($termId)
+    {
+        $query = $this->db->prepare("SELECT id FROM moxca_terms_taxonomy WHERE term_id = :termId AND taxonomy = 'character';");
+
+        $query->bindValue(':termId', $termId, PDO::PARAM_INT);
+        $query->execute();
+
+        $result = $query->fetch();
+
+        if (!empty($result)) {
+            //$row = current($result);
+            return $result['id'];
+        } else {
+            return false;
+        }
+    }
 
     public function existsTheme($termId)
     {
@@ -45,15 +122,100 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         }
     }
 
+    public function updateWorkCharactersRelationShips(Author_Collection_Work $obj)
+    {
+        $newCharacters = $obj->getCharacters();
+        $workId = $obj->getId();
+        $formerCharacters = $this->workHasCharacters($workId);
+
+        echo"<br>atuais:";
+        print_r($newCharacters);
+        echo"<br>antigos:";
+        print_r($formerCharacters);
+
+        if ((is_array($newCharacters)) && (count($newCharacters))) {
+
+            if (!$formerCharacters) {
+                // tudo novo, é só incluir
+                if (count($newCharacters) > 0) {
+                    foreach($newCharacters as $k => $termId) {
+                        $termTaxonomyId = $this->existsCharacter($termId);
+                        $this->insertRelationship($workId, $termTaxonomyId);
+                    }
+                }
+            } else {
+                //descobre se caiu algum
+                //   e remove
+                $toRemove = array_diff($formerCharacters, $newCharacters);
+                if ((is_array($toRemove)) && (count($toRemove))) {
+                    foreach($toRemove as $k => $termId) {
+                        //$this->deleteRelationship($workId, $termId, 'character');
+                    }
+                }
+                echo"<br>removendo:";
+                print_r($toRemove);
+
+                //descobre quais são novos
+                //    e inclui
+                $toInclude = array_diff($newCharacters, $formerCharacters);
+                if ((is_array($toInclude)) && (count($toInclude))) {
+                    foreach($toInclude as $k => $termId) {
+                        $termTaxonomyId = $this->existsCharacter($termId);
+                        $this->insertRelationship($workId, $termTaxonomyId);
+                    }
+                }
+//                echo"<br>incluindo:";
+//                print_r($toRemove);
+
+
+//die();
+
+                if ($newCharacters != $formerCharacters) {
+                    $formerTermTaxonomy = $this->existsCharacter($formerCharacters);
+                    $newTermTaxonomy = $this->createCharacterIfNeeded($newCharacters);
+
+                    $query = $this->db->prepare("UPDATE moxca_terms_relationships SET term_taxonomy = :newCharacter"
+                            . " WHERE object = :workId AND term_taxonomy = :formerCharacter;");
+
+                    $query->bindValue(':workId', $workId, PDO::PARAM_STR);
+                    $query->bindValue(':newCharacter', $newTermTaxonomy, PDO::PARAM_STR);
+                    $query->bindValue(':formerCharacter', $formerTermTaxonomy, PDO::PARAM_STR);
+                    $query->execute();
+
+
+                    $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count + 1
+                        WHERE id = :termTaxonomy;");
+                    $query->bindValue(':termTaxonomy', $newTermTaxonomy, PDO::PARAM_STR);
+                    $query->execute();
+
+                    $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count - 1
+                        WHERE id = :termTaxonomy;");
+                    $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+
+                    try {
+                        $query->execute();
+                    } catch (Exception $e) {
+                        $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = 0
+                            WHERE id = :termTaxonomy;");
+                        $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+                    }
+                }
+            }
+        } else {
+            //remove todos
+        }
+
+    }
+
     public function updateWorkThemeRelationShip(Author_Collection_Work $obj)
     {
-
         $newThemeTermId = $obj->getTheme();
         $workId = $obj->getId();
         $formerThemeTermId = $this->workHasTheme($workId);
         if (!$formerThemeTermId) {
             if ($newThemeTermId > 0) {
-                $this->insertRelationship($workId, $newThemeTermId);
+                $termTaxonomyId = $this->existsTheme($newThemeTermId);
+                $this->insertRelationship($workId, $termTaxonomyId);
             }
         } else {
             if ($newThemeTermId != $formerThemeTermId) {
@@ -90,6 +252,22 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
+    public function getAllCharactersAlphabeticallyOrdered()
+    {
+        $query = $this->db->prepare('SELECT t.id, t.term
+                FROM moxca_terms t
+                LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
+                WHERE tx.taxonomy =  \'character\' ORDER BY t.term');
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[$row['id']] = $row['term'];
+        }
+        return $data;
+
+    }
+
     public function getAllThemesAlphabeticallyOrdered()
     {
         $query = $this->db->prepare('SELECT t.id, t.term
@@ -107,6 +285,25 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
     }
 
 
+
+    public function workHasCharacters($workId)
+    {
+        $query = $this->db->prepare('SELECT tx.id, tx.term_id
+                FROM moxca_terms_relationships tr
+                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
+                WHERE tr.object = :workId
+                AND tx.taxonomy =  \'character\'');
+
+        $query->bindValue(':workId', $workId, PDO::PARAM_INT);
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[$row['id']] = $row['term_id'];
+        }
+        return $data;
+    }
 
     public function workHasTheme($workId)
     {
@@ -128,6 +325,17 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         }
     }
 
+
+    private function createCharacterIfNeeded($termId)
+    {
+        $existsCharacterWithTerm = $this->existsCharacter($termId);
+        if (!$existsCharacterWithTerm) {
+            $existsCharacterWithTerm = $this->insertCharacter($termId);
+        }
+
+        return $existsCharacterWithTerm;
+
+    }
 
     private function createThemeIfNeeded($termId)
     {

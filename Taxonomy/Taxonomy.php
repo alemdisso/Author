@@ -12,11 +12,11 @@ class Moxca_Taxonomy_TaxonomyMapper
         $this->identityMap = new SplObjectStorage;
     }
 
-    public function insertCategory($termId)
+    public function insertTheme($termId)
     {
 
         $query = $this->db->prepare("INSERT INTO moxca_terms_taxonomy (term_id, taxonomy, count)
-            VALUES (:termId, 'category', 0)");
+            VALUES (:termId, 'theme', 0)");
 
         $query->bindValue(':termId', $termId, PDO::PARAM_INT);
 
@@ -46,17 +46,17 @@ class Moxca_Taxonomy_TaxonomyMapper
 
     }
 
-    public function insertPostCategoryRelationShip(Moxca_Blog_Post $obj)
+    public function insertWorkThemeRelationShip(Moxca_Blog_Post $obj)
     {
-        if ($obj->getCategory() > 0) {
-            $termTaxonomy = $this->createCategoryIfNeeded($obj->getCategory());
+        if ($obj->getTheme() > 0) {
+            $termTaxonomy = $this->createThemeIfNeeded($obj->getTheme());
             $this->insertRelationship($obj->getId(), $termTaxonomy);
         }
     }
 
-    public function existsCategory($termId)
+    public function existsTheme($termId)
     {
-        $query = $this->db->prepare("SELECT id FROM moxca_terms_taxonomy WHERE term_id = :termId AND taxonomy = 'category';");
+        $query = $this->db->prepare("SELECT id FROM moxca_terms_taxonomy WHERE term_id = :termId AND taxonomy = 'theme';");
 
         $query->bindValue(':termId', $termId, PDO::PARAM_INT);
         $query->execute();
@@ -174,14 +174,14 @@ class Moxca_Taxonomy_TaxonomyMapper
     }
 
 
-    private function createCategoryIfNeeded($termId)
+    private function createThemeIfNeeded($termId)
     {
-        $existsCategoryWithTerm = $this->existsCategory($termId);
-        if (!$existsCategoryWithTerm) {
-            $existsCategoryWithTerm = $this->insertCategory($termId);
+        $existsThemeWithTerm = $this->existsTheme($termId);
+        if (!$existsThemeWithTerm) {
+            $existsThemeWithTerm = $this->insertTheme($termId);
         }
 
-        return $existsCategoryWithTerm;
+        return $existsThemeWithTerm;
 
     }
 

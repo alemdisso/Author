@@ -10,6 +10,7 @@ class Author_Collection_Work {
     protected $description;
     protected $type;
     protected $theme;
+    protected $characters;
 
     function __construct($id=0) {
         $this->id = (int)$id;
@@ -20,6 +21,8 @@ class Author_Collection_Work {
         $this->description = "";
         $this->type = null;
         $this->theme = null;
+        $this->characters = array();
+
     }
 
     public function getId() {
@@ -88,7 +91,7 @@ class Author_Collection_Work {
                 $this->theme = $theme;
             }
         } else {
-            throw new Moxca_Blog_PostException("This ($theme) is not a valid theme.");
+            throw new Author_Collection_WorkException("This ($theme) is not a valid theme.");
         }
     } //SetTheme
 
@@ -177,5 +180,24 @@ class Author_Collection_Work {
     {
         return $this->uri;
     } //getUri
+
+    public function getCharacters()
+    {
+        return $this->characters;
+    } //getCharacters
+
+    public function addCharacter($termId)
+    {
+        if (isset($this->characters)) {
+            $values = array_flip($this->characters);
+            if (!isset($values[$termId])) {
+                $this->characters[] = $termId;
+            }
+        } else {
+            $this->characters[] = $termId;
+        }
+
+//        die(print_r($this->characters));
+    } //getCharacters
 
 }

@@ -191,7 +191,9 @@ class Author_Collection_EditionMapper
 
         $data = array();
         foreach ($resultPDO as $row) {
-            $data[$row['id']] = $row['id'];
+            if (!is_null($row['id'])) {
+                $data[$row['id']] = $row['id'];
+            }
         }
         return $data;
 

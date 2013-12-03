@@ -128,11 +128,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         $workId = $obj->getId();
         $formerCharacters = $this->workHasCharacters($workId);
 
-        echo"<br>atuais:";
-        print_r($newCharacters);
-        echo"<br>antigos:";
-        print_r($formerCharacters);
-
         if ((is_array($newCharacters)) && (count($newCharacters))) {
 
             if (!$formerCharacters) {
@@ -155,8 +150,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                         }
                     }
                 }
-//                echo"<br>removendo:";
-//                print_r($toRemove);
 
                 //descobre quais são novos
                 //    e inclui
@@ -167,9 +160,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                         $this->insertRelationship($workId, $termTaxonomyId);
                     }
                 }
-
-
-//die();
 
                 if ($newCharacters != $formerCharacters) {
                     $formerTermTaxonomy = $this->existsCharacter($formerCharacters);
@@ -416,6 +406,29 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         return $data;
     }
 
+    public function editionsWithTheme($theme)
+    {
+        $query = $this->db->prepare('SELECT e.id
+                FROM author_collection_editions e
+                LEFT JOIN author_collection_works w ON e.work = w.id
+                LEFT JOIN moxca_terms_relationships tr ON w.id = tr.object
+                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
+                LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
+                WHERE tt.term = :theme
+                AND tx.taxonomy =  \'theme\'');
+
+        $query->bindValue(':theme', $theme, PDO::PARAM_STR);
+        $query->execute();
+
+        $resultPDO = $query->fetchAll();
+
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[] = $row['id'];
+        }
+        return $data;
+    }
+
     public function deleteCharacter($workId, $termId)
     {
 
@@ -429,6 +442,23 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
             throw $ex;
         }
         return false;
+
+    }
+
+    public function getCharactersAlphabeticallyOrdered($justRelatedToWorks=false)
+    {
+
+        $query = $this->db->prepare('SELECT t.id, t.term
+                FROM moxca_terms t
+                LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
+                WHERE tx.taxonomy =  \'character\' ORDER BY t.term');
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[$row['id']] = $row['term'];
+        }
+        return $data;
 
     }
 

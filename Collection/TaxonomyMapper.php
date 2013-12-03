@@ -406,6 +406,29 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         return $data;
     }
 
+    public function editionsWithCharacter($character)
+    {
+        $query = $this->db->prepare('SELECT e.id
+                FROM author_collection_editions e
+                LEFT JOIN author_collection_works w ON e.work = w.id
+                LEFT JOIN moxca_terms_relationships tr ON w.id = tr.object
+                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
+                LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
+                WHERE tt.term = :character
+                AND tx.taxonomy =  \'character\'');
+
+        $query->bindValue(':character', $character, PDO::PARAM_STR);
+        $query->execute();
+
+        $resultPDO = $query->fetchAll();
+
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[] = $row['id'];
+        }
+        return $data;
+    }
+
     public function editionsWithTheme($theme)
     {
         $query = $this->db->prepare('SELECT e.id
@@ -448,10 +471,14 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
     public function getCharactersAlphabeticallyOrdered($justRelatedToWorks=false)
     {
 
-        $query = $this->db->prepare('SELECT t.id, t.term
+        $countCondition = "";
+        if ($justRelatedToWorks) {
+            $countCondition = " AND tx.count > 0 ";
+        }
+        $query = $this->db->prepare("SELECT t.id, t.term
                 FROM moxca_terms t
                 LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
-                WHERE tx.taxonomy =  \'character\' ORDER BY t.term');
+                WHERE tx.taxonomy =  'character' $countCondition ORDER BY t.term");
         $query->execute();
         $resultPDO = $query->fetchAll();
         $data = array();
@@ -459,6 +486,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
             $data[$row['id']] = $row['term'];
         }
         return $data;
+
 
     }
 

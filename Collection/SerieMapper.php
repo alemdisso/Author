@@ -131,10 +131,14 @@ class Author_Collection_SerieMapper
     }
 
 
-   public function getAllSeriesAlphabeticallyOrdered($editorId)
+   public function getAllSeriesAlphabeticallyOrdered($editorId=0)
     {
-        $query = $this->db->prepare('SELECT id, name FROM author_collection_series WHERE editor = :editor ORDER BY name;');
-        $query->bindValue(':editor', $editorId, PDO::PARAM_STR);
+       if ($editorId > 0) {
+            $query = $this->db->prepare('SELECT id, name FROM author_collection_series WHERE editor = :editor ORDER BY name;');
+            $query->bindValue(':editor', $editorId, PDO::PARAM_STR);
+       } else {
+            $query = $this->db->prepare('SELECT id, name FROM author_collection_series WHERE 1 ORDER BY name;');
+       }
         $query->execute();
         $resultPDO = $query->fetchAll();
 

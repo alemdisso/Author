@@ -152,7 +152,7 @@ class Author_Collection_EditionMapper
         $result = $query->fetch();
 
         if (empty($result)) {
-            throw new Author_Collection_WorkMapperException(sprintf('There is no work with uri #%s.', $uri));
+            throw new Author_Collection_WorkMapperException(sprintf('There is no edition with uri #%s.', $uri));
         }
         $id = $result['id'];
 
@@ -190,7 +190,10 @@ class Author_Collection_EditionMapper
 
         $data = array();
         foreach ($resultPDO as $row) {
-            $data[$row['id']] = $row['editor'];
+            //$data[$row['id']] = $row['editor'];
+            if (!is_null($row['id'])) {
+                $data[$row['id']] = $row['id'];
+            }
         }
         return $data;
 

@@ -9,6 +9,8 @@ class Author_Collection_Work {
     protected $summary;
     protected $description;
     protected $type;
+    protected $theme;
+    protected $characters;
 
     function __construct($id=0) {
         $this->id = (int)$id;
@@ -18,6 +20,9 @@ class Author_Collection_Work {
         $this->summary = "";
         $this->description = "";
         $this->type = null;
+        $this->theme = null;
+        $this->characters = array();
+
     }
 
     public function getId() {
@@ -72,6 +77,23 @@ class Author_Collection_Work {
             throw new Author_Collection_WorkException("This ($summary) is not a valid summary.");
         }
     } //SetSummary
+
+    public function getTheme()
+    {
+        return $this->theme;
+    } //getTheme
+
+    public function setTheme($theme)
+    {
+        $validator = new Moxca_Util_ValidPositiveDecimal();
+        if ($validator->isValid($theme)) {
+            if ($this->theme != $theme) {
+                $this->theme = $theme;
+            }
+        } else {
+            throw new Author_Collection_WorkException("This ($theme) is not a valid theme.");
+        }
+    } //SetTheme
 
     public function getTitle($raw = false)
     {
@@ -144,7 +166,7 @@ class Author_Collection_Work {
                 break;
 
             default:
-                throw new Author_Collection_ProjectException("Invalid project type.");
+                throw new Author_Collection_WorkException("Invalid work type.");
                 break;
         }
     }
@@ -158,5 +180,24 @@ class Author_Collection_Work {
     {
         return $this->uri;
     } //getUri
+
+    public function getCharacters()
+    {
+        return $this->characters;
+    } //getCharacters
+
+    public function addCharacter($termId)
+    {
+        if (isset($this->characters)) {
+            $values = array_flip($this->characters);
+            if (!isset($values[$termId])) {
+                $this->characters[] = $termId;
+            }
+        } else {
+            $this->characters[] = $termId;
+        }
+
+//        die(print_r($this->characters));
+    } //getCharacters
 
 }

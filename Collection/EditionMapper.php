@@ -206,7 +206,6 @@ class Author_Collection_EditionMapper
    public function getAllEditionsAlphabeticallyOrdered()
     {
         $query = $this->db->prepare('SELECT id, editor FROM author_collection_editions WHERE 1 =1 ORDER BY editor;');
-        $query->bindValue(':project', $obj->getId(), PDO::PARAM_STR);
         $query->execute();
         $resultPDO = $query->fetchAll();
 

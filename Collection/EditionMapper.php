@@ -142,6 +142,28 @@ class Author_Collection_EditionMapper
         }
     }
 
+    public function findByTitle($title)
+    {
+        $query = $this->db->prepare('SELECT e.id FROM author_collection_editions e
+                                     WHERE e.title=:title LIMIT 1;');
+        $query->bindValue(':title', $title, PDO::PARAM_STR);
+        $query->execute();
+
+        $result = $query->fetch();
+        if (empty($result)) {
+            throw new Author_Collection_WorkMapperException(sprintf('There is no edition with title #%s.', $title));
+        }
+        $id = $result['id'];
+
+        if ($id > 0) {
+            return $this->findById($id);
+        } else {
+            throw new Author_Collection_WorkMapperException(sprintf('The work with id #%s has id=0?!?.', $title));
+        }
+
+    }
+
+
     public function findByUri($uri)
     {
         $query = $this->db->prepare('SELECT e.id FROM author_collection_editions e

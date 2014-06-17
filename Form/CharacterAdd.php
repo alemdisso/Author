@@ -79,7 +79,15 @@ class Author_Form_CharacterAdd extends Zend_Form
             $workId = $data['id'];
             $workObj = $workMapper->findById($workId);
 
-            $workObj->addCharacter($data['existingCharacter']);
+            if ($data['existingCharacter'] > 0) {
+                $workObj->addCharacter($data['existingCharacter']);
+
+            } else if ($data['newCharacter'] != "") {
+                $taxonomyMapper = new Author_Collection_TaxonomyMapper($db);
+                $termId = $taxonomyMapper->findTermAndInsertIfNew($data['newCharacter']);
+                //die("vou add charac $termId");
+                $workObj->addCharacter($termId);
+            }
 
             $workMapper->update($workObj);
             return $workObj;

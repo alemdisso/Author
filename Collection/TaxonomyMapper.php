@@ -134,7 +134,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 // tudo novo, é só incluir
                 if (count($newCharacters) > 0) {
                     foreach($newCharacters as $k => $termId) {
-                        $termTaxonomyId = $this->existsCharacter($termId);
+                        $termTaxonomyId = $this->createCharacterIfNeeded($termId);
                         $this->insertRelationship($workId, $termTaxonomyId);
                     }
                 }
@@ -144,7 +144,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 $toRemove = array_diff($formerCharacters, $newCharacters);
                 if ((is_array($toRemove)) && (count($toRemove))) {
                     foreach($toRemove as $k => $termId) {
-                        if ($taxonomyId = $this->existsCharacter($termId)) {
+                        if ($taxonomyId = $this->createCharacterIfNeeded($termId)) {
                             $this->deleteRelationship($workId, $termId, 'character');
                             $this->decreaseTermTaxonomyCount($taxonomyId, 1);
                         }
@@ -156,13 +156,13 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 $toInclude = array_diff($newCharacters, $formerCharacters);
                 if ((is_array($toInclude)) && (count($toInclude))) {
                     foreach($toInclude as $k => $termId) {
-                        $termTaxonomyId = $this->existsCharacter($termId);
+                        $termTaxonomyId = $this->createCharacterIfNeeded($termId);
                         $this->insertRelationship($workId, $termTaxonomyId);
                     }
                 }
 
                 if ($newCharacters != $formerCharacters) {
-                    $formerTermTaxonomy = $this->existsCharacter($formerCharacters);
+                    $formerTermTaxonomy = $this->createCharacterIfNeeded($formerCharacters);
                     $newTermTaxonomy = $this->createCharacterIfNeeded($newCharacters);
 
                     $query = $this->db->prepare("UPDATE moxca_terms_relationships SET term_taxonomy = :newCharacter"
@@ -261,7 +261,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     public function getAllThemesAlphabeticallyOrdered()
     {
-        $query = $this->db->prepare('SELECT t.id, t.term
+        $query = $this->db->prepare('SELECT t.id, t.term, t.uri
                 FROM moxca_terms t
                 LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
                 WHERE tx.taxonomy =  \'theme\' ORDER BY t.term');
@@ -269,7 +269,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         $resultPDO = $query->fetchAll();
         $data = array();
         foreach ($resultPDO as $row) {
-            $data[$row['id']] = $row['term'];
+            $data[$row['uri']] = $row['term'];
         }
         return $data;
 
@@ -414,7 +414,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 LEFT JOIN moxca_terms_relationships tr ON w.id = tr.object
                 LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
-                WHERE tt.term = :character
+                WHERE tt.uri= :character
                 AND tx.taxonomy =  \'character\'');
 
         $query->bindValue(':character', $character, PDO::PARAM_STR);
@@ -437,7 +437,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 LEFT JOIN moxca_terms_relationships tr ON w.id = tr.object
                 LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
-                WHERE tt.term = :theme
+                WHERE tt.uri = :theme
                 AND tx.taxonomy =  \'theme\'');
 
         $query->bindValue(':theme', $theme, PDO::PARAM_STR);
@@ -456,7 +456,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
     {
 
         try {
-            if ($taxonomyId = $this->existsCharacter($termId)) {
+            if ($taxonomyId = $this->createCharacterIfNeeded($termId)) {
                 $this->deleteRelationship($workId, $termId, 'character');
                 $this->decreaseTermTaxonomyCount($taxonomyId, 1);
                 return true;
@@ -475,7 +475,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         if ($justRelatedToWorks) {
             $countCondition = " AND tx.count > 0 ";
         }
-        $query = $this->db->prepare("SELECT t.id, t.term
+        $query = $this->db->prepare("SELECT t.id, t.term, t.uri
                 FROM moxca_terms t
                 LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
                 WHERE tx.taxonomy =  'character' $countCondition ORDER BY t.term");
@@ -483,7 +483,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         $resultPDO = $query->fetchAll();
         $data = array();
         foreach ($resultPDO as $row) {
-            $data[$row['id']] = $row['term'];
+            $data[$row['uri']] = $row['term'];
         }
         return $data;
 

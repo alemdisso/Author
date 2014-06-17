@@ -267,12 +267,31 @@ class Author_Collection_EditionMapper
     }
 
 
-    public function getAllEditionsOfSerie($serie)
+    public function getAllEditionsOfSerieByUri($serie)
     {
         $query = $this->db->prepare('SELECT e.id FROM author_collection_series s
                                      LEFT JOIN author_collection_editions e ON s.id = e.serie
                                      WHERE s.uri = :serie ORDER BY e.title;');
         $query->bindValue(':serie', $serie, PDO::PARAM_STR);
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+
+        $result = array();
+        foreach ($resultPDO as $row) {
+            if (!is_null($row['id'])) {
+                $result[] = $row['id'];
+            }
+        }
+        return $result;
+
+    }
+
+    public function getAllEditionsOfSerieById($id)
+    {
+        $query = $this->db->prepare('SELECT e.id FROM author_collection_series s
+                                     LEFT JOIN author_collection_editions e ON s.id = e.serie
+                                     WHERE s.id = :id ORDER BY e.title;');
+        $query->bindValue(':id', $id, PDO::PARAM_STR);
         $query->execute();
         $resultPDO = $query->fetchAll();
 

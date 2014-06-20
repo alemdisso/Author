@@ -83,6 +83,10 @@ class Author_Collection_WorkMapper
             $taxonomyMapper->updateWorkCharactersRelationShips($obj);
         }
 
+        if ($obj->getKeywords()) {
+            $taxonomyMapper->updateWorkKeywordsRelationShips($obj);
+        }
+
     }
 
     public function findById($id)
@@ -119,6 +123,8 @@ class Author_Collection_WorkMapper
         $this->setAttributeValue($obj, $taxonomyMapper->findThemeByWorkId($id), 'theme');
 
         $this->setAttributeValue($obj, $taxonomyMapper->workHasCharacters($id), 'characters');
+
+        $this->setAttributeValue($obj, $taxonomyMapper->workHasKeywords($id), 'keywords');
 
         $this->identityMap[$obj] = $id;
 
@@ -170,6 +176,7 @@ class Author_Collection_WorkMapper
         $themeTaxonomyId = $taxonomyMapper->findTaxonomyByTheme($obj->getTheme());
         $taxonomyMapper->purgeDeletedObject($workId, 'theme');
         $taxonomyMapper->purgeDeletedObject($workId, 'character');
+        $taxonomyMapper->purgeDeletedObject($workId, 'work_keyword');
 
 //        $query = $this->db->prepare('DELETE FROM moxca_terms_relationships
 //                USING moxca_terms_relationships, moxca_terms_taxonomy

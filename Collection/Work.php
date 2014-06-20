@@ -11,6 +11,7 @@ class Author_Collection_Work {
     protected $type;
     protected $theme;
     protected $characters;
+    protected $keywords;
 
     function __construct($id=0) {
         $this->id = (int)$id;
@@ -22,6 +23,7 @@ class Author_Collection_Work {
         $this->type = null;
         $this->theme = null;
         $this->characters = array();
+        $this->keywords = array();
 
     }
 
@@ -199,5 +201,24 @@ class Author_Collection_Work {
 
 //        die(print_r($this->characters));
     } //getCharacters
+
+    public function getKeywords()
+    {
+        return $this->keywords;
+    } //getKeywords
+
+    public function addKeyword($termId)
+    {
+        if (isset($this->keywords)) {
+            $values = array_flip($this->keywords);
+            if (!isset($values[$termId])) {
+                $this->keywords[] = $termId;
+            }
+        } else {
+            $this->keywords[] = $termId;
+        }
+
+//        die(print_r($this->keywords));
+    } //getKeywords
 
 }

@@ -276,6 +276,22 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
+    public function getAllCharactersAlphabeticallyOrdered()
+    {
+        $query = $this->db->prepare('SELECT t.id, t.term, t.uri
+                FROM moxca_terms t
+                LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
+                WHERE tx.taxonomy =  \'character\' ORDER BY t.term');
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[$row['uri']] = $row['term'];
+        }
+        return $data;
+
+    }
+
     public function getAllWorkKeywordsAlphabeticallyOrdered()
     {
         $query = $this->db->prepare('SELECT t.id, t.term

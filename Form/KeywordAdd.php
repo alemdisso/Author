@@ -17,13 +17,13 @@ class Author_Form_KeywordAdd extends Zend_Form
         $element->setDecorators(array('ViewHelper'));
 
         $mapper = new Author_Collection_TaxonomyMapper();
-        $rawLabelsArray = $mapper->getAllWorkKeywordsAlphabeticallyOrdered();
+        $rawLabelsArray = $mapper->getAllWorksKeywordsAlphabeticallyOrdered();
 
         $view = new Zend_View();
         $keywordsArray = array("0" => $view->translate("#(choose)"));
 
-        foreach($rawLabelsArray as $k => $name) {
-            $keywordsArray[$k] = $name;
+        foreach($rawLabelsArray as $k => $tagArray) {
+            $keywordsArray[$k] = $tagArray['term'];
         }
 
 

@@ -292,9 +292,9 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
-    public function getAllWorkKeywordsAlphabeticallyOrdered()
+    public function getAllWorksKeywordsAlphabeticallyOrdered()
     {
-        $query = $this->db->prepare('SELECT t.id, t.term
+        $query = $this->db->prepare('SELECT t.id, t.term, t.uri, tx.count
                 FROM moxca_terms t
                 LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
                 WHERE tx.taxonomy =  \'work_keyword\' ORDER BY t.term');
@@ -302,11 +302,12 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         $resultPDO = $query->fetchAll();
         $data = array();
         foreach ($resultPDO as $row) {
-            $data[$row['id']] = $row['term'];
+            $data[$row['id']] = array('term' => $row['term'], 'uri' => $row['uri'], 'count' => $row['count']);
         }
         return $data;
 
     }
+
 
     public function getAllThemesAlphabeticallyOrdered()
     {
@@ -483,7 +484,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
                 WHERE tt.uri= :keyword
-                AND tx.taxonomy =  \'keyword\'');
+                AND tx.taxonomy =  \'work_keyword\'');
 
         $query->bindValue(':keyword', $keyword, PDO::PARAM_STR);
         $query->execute();

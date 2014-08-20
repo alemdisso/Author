@@ -475,6 +475,29 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         return $data;
     }
 
+    public function editionsWithCharacter($keyword)
+    {
+        $query = $this->db->prepare('SELECT e.id
+                FROM author_collection_editions e
+                LEFT JOIN author_collection_works w ON e.work = w.id
+                LEFT JOIN moxca_terms_relationships tr ON w.id = tr.object
+                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
+                LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
+                WHERE tt.uri= :keyword
+                AND tx.taxonomy =  \'character\'');
+
+        $query->bindValue(':keyword', $keyword, PDO::PARAM_STR);
+        $query->execute();
+
+        $resultPDO = $query->fetchAll();
+
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[] = $row['id'];
+        }
+        return $data;
+    }
+
     public function editionsWithKeyword($keyword)
     {
         $query = $this->db->prepare('SELECT e.id

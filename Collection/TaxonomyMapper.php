@@ -367,9 +367,9 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     public function workHasTheme($workId)
     {
-        $query = $this->db->prepare('SELECT tr.id
+        $query = $this->db->prepare('SELECT tr.term_id
                 FROM moxca_terms_relationships tr
-                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.term_id
+                LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 WHERE tr.object = :workId
                 AND tx.taxonomy =  \'theme\'');
 

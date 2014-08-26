@@ -50,8 +50,9 @@ class Author_Collection_SerieMapper
             throw new Author_Collection_SerieMapperException('Object has no ID, cannot update.');
         }
 
-        $query = $this->db->prepare("UPDATE author_collection_series SET uri = :uri, name = :name, country = :country WHERE id = :id;");
+        $query = $this->db->prepare("UPDATE author_collection_series SET editor = :editor, uri = :uri, name = :name, country = :country WHERE id = :id;");
 
+        $query->bindValue(':editor', $obj->getEditor(), PDO::PARAM_INT);
         $query->bindValue(':uri', $obj->getUri(), PDO::PARAM_STR);
         $query->bindValue(':name', $obj->getName(), PDO::PARAM_STR);
         $query->bindValue(':country', $obj->getCountry(), PDO::PARAM_STR);
@@ -75,7 +76,7 @@ class Author_Collection_SerieMapper
             $this->identityMap->next();
         }
 
-        $query = $this->db->prepare('SELECT uri, name, country FROM author_collection_series WHERE id = :id;');
+        $query = $this->db->prepare('SELECT editor, uri, name, country FROM author_collection_series WHERE id = :id;');
         $query->bindValue(':id', $id, PDO::PARAM_STR);
         $query->execute();
 
@@ -88,6 +89,7 @@ class Author_Collection_SerieMapper
 
         $obj = new Author_Collection_Serie();
         $this->setAttributeValue($obj, $id, 'id');
+        $this->setAttributeValue($obj, $result['editor'], 'editor');
         $this->setAttributeValue($obj, $result['name'], 'name');
         $this->setAttributeValue($obj, $result['uri'], 'uri');
         $this->setAttributeValue($obj, $result['country'], 'country');

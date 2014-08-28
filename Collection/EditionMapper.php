@@ -337,5 +337,37 @@ class Author_Collection_EditionMapper
 
     }
 
+    public function getAutoCompleteWorks($parts)
+    {
+        $p = count($parts);
+        $and = "";
+
+        $sql = 'SELECT e.id, e.uri, e.title FROM author_collection_editions e
+                                    WHERE ';
+        for($i = 0; $i < $p; $i++) {
+          //$sql .= $and . ' e.title LIKE ' . "'%" . ":term" . "%'";
+          $sql .= $and . ' e.title LIKE ' . ":term$i";
+          $and = " AND ";
+        }
+        $query = $this->db->prepare($sql);
+
+        for($i = 0; $i < $p; $i++) {
+            $query->bindValue(":term$i", '%' . $parts[$i] . '%', PDO::PARAM_STR);
+        }
+
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[] = array(
+                'id' => $row['id'],
+                'uri' => $row['uri'],
+                'title' => $row['title'],
+            );
+        }
+        return $data;
+
+    }
 
 }

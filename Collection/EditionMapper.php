@@ -346,7 +346,7 @@ class Author_Collection_EditionMapper
                                     WHERE ';
         for($i = 0; $i < $p; $i++) {
           //$sql .= $and . ' e.title LIKE ' . "'%" . ":term" . "%'";
-          $sql .= $and . ' e.title LIKE ' . ":term$i";
+          $sql .= $and . ' e.uri LIKE ' . ":term$i";
           $and = " AND ";
         }
         $query = $this->db->prepare($sql);

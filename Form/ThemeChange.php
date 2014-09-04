@@ -22,8 +22,8 @@ class Author_Form_ThemeChange extends Zend_Form
         $view = new Zend_View();
         $labelsArray = array("0" => $view->translate("#(choose)"));
 
-        foreach($rawLabelsArray as $k => $label) {
-            $labelsArray[$k] = $label;
+        foreach($rawLabelsArray as $k => $themeData) {
+            $labelsArray[$k] = $themeData['term'];
         }
 
 

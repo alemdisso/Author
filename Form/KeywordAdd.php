@@ -71,7 +71,7 @@ class Author_Form_KeywordAdd extends Zend_Form
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_WorkCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
             $workMapper = new Author_Collection_WorkMapper($db);
@@ -84,9 +84,14 @@ class Author_Form_KeywordAdd extends Zend_Form
 
             } else if ($data['newKeyword'] != "") {
                 $taxonomyMapper = new Author_Collection_TaxonomyMapper($db);
-                $termId = $taxonomyMapper->findTermAndInsertIfNew($data['newKeyword']);
-                //die("vou add charac $termId");
-                $workObj->addKeyword($termId);
+
+                $keywords = preg_split( "/(,|;|\|)/", $data['newKeyword'] );
+
+                foreach ($keywords as $eachKeyword) {
+                    $eachKeyword = trim($eachKeyword);
+                    $termId = $taxonomyMapper->findTermAndInsertIfNew($eachKeyword);
+                    $workObj->addKeyword($termId);
+                }
             }
 
             $workMapper->update($workObj);

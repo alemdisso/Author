@@ -51,7 +51,7 @@ class Author_Form_SerieCreate extends Zend_Form
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_SerieCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
 

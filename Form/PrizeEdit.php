@@ -20,7 +20,7 @@ class Author_Form_PrizeEdit extends Author_Form_PrizeCreate
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_EditionCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
             $prizeMapper = new Author_Collection_PrizeMapper($db);

@@ -49,6 +49,20 @@ class Author_Collection_Edition {
         return $this->editor;
     } //getName
 
+    public function setEditor($editor)
+    {
+        $validator = new Moxca_Util_ValidPositiveDecimal();
+        if (($validator->isValid($editor)) || ($editor == "")) {
+            if ($this->editor != $editor) {
+                $this->editor = $editor;
+            }
+        } else {
+            throw new Author_Collection_WorkException("This ($editor) is not a valid editor.");
+        }
+    } //SetEditor
+
+
+
     public function getPrefix()
     {
         return $this->prefix;

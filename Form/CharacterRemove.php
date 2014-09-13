@@ -36,7 +36,7 @@ class Author_Form_CharacterRemove extends Zend_Form
 
         if ($this->isValid($data) !== true)
         {
-            throw new Author_Form_WorkRemoveException(_('#Invalid data!'));
+            throw new Author_Form_Exception(_('#Invalid data!'));
         }
         else
         {

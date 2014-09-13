@@ -38,7 +38,7 @@ class Author_Form_SerieEdit extends Author_Form_SerieCreate
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_EditionCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
             $serieMapper = new Author_Collection_SerieMapper($db);

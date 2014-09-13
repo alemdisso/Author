@@ -71,7 +71,7 @@ class Author_Form_CharacterAdd extends Zend_Form
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_WorkCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
             $workMapper = new Author_Collection_WorkMapper($db);

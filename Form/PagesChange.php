@@ -50,7 +50,7 @@ class Author_Form_PagesChange extends Zend_Form
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_EditionCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
             $editionMapper = new Author_Collection_EditionMapper($db);

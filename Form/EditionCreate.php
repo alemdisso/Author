@@ -191,7 +191,7 @@ class Author_Form_EditionCreate extends Zend_Form
     public function process($data) {
 
         if ($this->isValid($data) !== true) {
-            throw new Author_Form_EditionCreateException('Invalid data!');
+            throw new Author_Form_Exception('Invalid data!');
         } else {
             $db = Zend_Registry::get('db');
             $workMapper = new Author_Collection_WorkMapper($db);
@@ -205,7 +205,7 @@ class Author_Form_EditionCreate extends Zend_Form
             $work->SetSummary($data['summary']);
 
             if (!$this->cover->receive()) {
-                throw new Author_Form_EditionCreateException('Something wrong receiving cover file');
+                throw new Author_Form_Exception('Something wrong receiving cover file');
             }
 
             $workMapper->insert($work);

@@ -507,7 +507,8 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
                 WHERE tt.uri= :keyword
-                AND tx.taxonomy =  \'work_keyword\'');
+                AND tx.taxonomy =  \'work_keyword\'
+                ORDER BY e.title');
 
         $query->bindValue(':keyword', $keyword, PDO::PARAM_STR);
         $query->execute();

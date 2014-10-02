@@ -199,7 +199,6 @@ class Author_Collection_Work {
             $this->characters[] = $termId;
         }
 
-//        die(print_r($this->characters));
     } //getCharacters
 
     public function getKeywords()
@@ -218,7 +217,6 @@ class Author_Collection_Work {
             $this->keywords[] = $termId;
         }
 
-//        die(print_r($this->keywords));
     } //getKeywords
 
 }

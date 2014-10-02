@@ -77,7 +77,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         }
     }
 
-    public function updateWorkCharactersRelationShips(Author_Collection_Work $obj)
+    public function updateWorkCharactersRelationships(Author_Collection_Work $obj)
     {
         $newCharacters = $obj->getCharacters();
         $workId = $obj->getId();
@@ -153,7 +153,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
-    public function updateWorkKeywordsRelationShips(Author_Collection_Work $obj)
+    public function updateWorkKeywordsRelationships(Author_Collection_Work $obj)
     {
         $newKeywords = $obj->getKeywords();
         $workId = $obj->getId();
@@ -231,7 +231,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
-    public function updateWorkThemeRelationShip(Author_Collection_Work $obj)
+    public function updateWorkThemeRelationship(Author_Collection_Work $obj)
     {
         $newThemeTermId = $obj->getTheme();
         $workId = $obj->getId();

@@ -46,7 +46,7 @@ class Author_Collection_WorkMapper
 
         if ($obj->getTheme()) {
             $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
-            $taxonomyMapper->updateWorkThemeRelationShip($obj);
+            $taxonomyMapper->updateWorkThemeRelationship($obj);
         }
 
     }
@@ -76,15 +76,15 @@ class Author_Collection_WorkMapper
         $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
 
         if ($obj->getTheme()) {
-            $taxonomyMapper->updateWorkThemeRelationShip($obj);
+            $taxonomyMapper->updateWorkThemeRelationship($obj);
         }
 
         if ($obj->getCharacters()) {
-            $taxonomyMapper->updateWorkCharactersRelationShips($obj);
+            $taxonomyMapper->updateWorkCharactersRelationships($obj);
         }
 
         if ($obj->getKeywords()) {
-            $taxonomyMapper->updateWorkKeywordsRelationShips($obj);
+            $taxonomyMapper->updateWorkKeywordsRelationships($obj);
         }
 
     }

@@ -22,8 +22,8 @@ class Author_Form_CharacterAdd extends Zend_Form
         $view = new Zend_View();
         $charactersArray = array("0" => $view->translate("#(choose)"));
 
-        foreach($rawLabelsArray as $k => $name) {
-            $charactersArray[$k] = $name;
+        foreach($rawLabelsArray as $idCharacter => $termData) {
+            $charactersArray[$termData['uri']] = $termData['term'];
         }
 
 

@@ -286,8 +286,11 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         $resultPDO = $query->fetchAll();
         $data = array();
         foreach ($resultPDO as $row) {
-            $data[$row['uri']] = $row['term'];
+            $data[$row['id']] = array('uri' => $row['uri'], 'term' => $row['term']);
         }
+//        foreach ($resultPDO as $row) {
+//            $data[$row['uri']] = $row['term'];
+//        }
         return $data;
 
     }

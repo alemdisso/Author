@@ -60,6 +60,38 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         }
     }
 
+    public function insertCharacter($termId)
+    {
+
+        $query = $this->db->prepare("INSERT INTO moxca_terms_taxonomy (term_id, taxonomy, count)
+            VALUES (:termId, 'character', 0)");
+
+        $query->bindValue(':termId', $termId, PDO::PARAM_INT);
+
+        $query->execute();
+
+        return (int)$this->db->lastInsertId();
+
+
+    }
+
+    public function existsCharacter($termId)
+    {
+        $query = $this->db->prepare("SELECT id FROM moxca_terms_taxonomy WHERE term_id = :termId AND taxonomy = 'character';");
+
+        $query->bindValue(':termId', $termId, PDO::PARAM_INT);
+        $query->execute();
+
+        $result = $query->fetch();
+
+        if (!empty($result)) {
+            //$row = current($result);
+            return $result['id'];
+        } else {
+            return false;
+        }
+    }
+
     public function existsWorkKeyword($termId)
     {
         $query = $this->db->prepare("SELECT id FROM moxca_terms_taxonomy WHERE term_id = :termId AND taxonomy = 'work_keyword';");
@@ -105,7 +137,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                         }
                     }
                 }
-
                 //descobre quais são novos
                 //    e inclui
                 $toInclude = array_diff($newCharacters, $formerCharacters);
@@ -231,47 +262,78 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
-    public function updateWorkThemeRelationship(Author_Collection_Work $obj)
+    public function updateWorkThemesRelationships(Author_Collection_Work $obj)
     {
-        $newThemeTermId = $obj->getTheme();
+        $newThemes = $obj->getThemes();
         $workId = $obj->getId();
-        $formerThemeTermId = $this->workHasTheme($workId);
-        if (!$formerThemeTermId) {
-            if ($newThemeTermId > 0) {
-                $termTaxonomyId = $this->existsTheme($newThemeTermId);
-                $this->insertRelationship($workId, $termTaxonomyId);
-            }
-        } else {
-            if ($newThemeTermId != $formerThemeTermId) {
-                $formerTermTaxonomy = $this->existsTheme($formerThemeTermId);
-                $newTermTaxonomy = $this->createThemeIfNeeded($newThemeTermId);
+        $formerThemes = $this->workHasThemes($workId);
 
-                $query = $this->db->prepare("UPDATE moxca_terms_relationships SET term_taxonomy = :newTheme"
-                        . " WHERE object = :workId AND term_taxonomy = :formerTheme;");
+        if ((is_array($newThemes)) && (count($newThemes))) {
 
-                $query->bindValue(':workId', $workId, PDO::PARAM_STR);
-                $query->bindValue(':newTheme', $newTermTaxonomy, PDO::PARAM_STR);
-                $query->bindValue(':formerTheme', $formerTermTaxonomy, PDO::PARAM_STR);
-                $query->execute();
+            if (!$formerThemes) {
+                // tudo novo, é só incluir
+                if (count($newThemes) > 0) {
+                    foreach($newThemes as $k => $termId) {
+                        $termTaxonomyId = $this->createThemeIfNeeded($termId);
+                        $this->insertRelationship($workId, $termTaxonomyId);
+                    }
+                }
+            } else {
+                //descobre se caiu algum
+                //   e remove
+                $toRemove = array_diff($formerThemes, $newThemes);
+                if ((is_array($toRemove)) && (count($toRemove))) {
+                    foreach($toRemove as $k => $termId) {
+                        if ($taxonomyId = $this->createThemeIfNeeded($termId)) {
+                            $this->deleteRelationship($workId, $termId, 'theme');
+                            $this->decreaseTermTaxonomyCount($taxonomyId, 1);
+                        }
+                    }
+                }
 
+                //descobre quais são novos
+                //    e inclui
+                $toInclude = array_diff($newThemes, $formerThemes);
+                if ((is_array($toInclude)) && (count($toInclude))) {
+                    foreach($toInclude as $k => $termId) {
+                        $termTaxonomyId = $this->createThemeIfNeeded($termId);
+                        $this->insertRelationship($workId, $termTaxonomyId);
+                    }
+                }
 
-                $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count + 1
-                    WHERE id = :termTaxonomy;");
-                $query->bindValue(':termTaxonomy', $newTermTaxonomy, PDO::PARAM_STR);
-                $query->execute();
+                if ($newThemes != $formerThemes) {
+                    $formerTermTaxonomy = $this->createThemeIfNeeded($formerThemes);
+                    $newTermTaxonomy = $this->createThemeIfNeeded($newThemes);
 
-                $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count - 1
-                    WHERE id = :termTaxonomy;");
-                $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+                    $query = $this->db->prepare("UPDATE moxca_terms_relationships SET term_taxonomy = :newTheme"
+                            . " WHERE object = :workId AND term_taxonomy = :formerTheme;");
 
-                try {
+                    $query->bindValue(':workId', $workId, PDO::PARAM_STR);
+                    $query->bindValue(':newTheme', $newTermTaxonomy, PDO::PARAM_STR);
+                    $query->bindValue(':formerTheme', $formerTermTaxonomy, PDO::PARAM_STR);
                     $query->execute();
-                } catch (Exception $e) {
-                    $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = 0
+
+
+                    $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count + 1
+                        WHERE id = :termTaxonomy;");
+                    $query->bindValue(':termTaxonomy', $newTermTaxonomy, PDO::PARAM_STR);
+                    $query->execute();
+
+                    $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count - 1
                         WHERE id = :termTaxonomy;");
                     $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+
+                    try {
+                        $query->execute();
+                    } catch (Exception $e) {
+                        $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = 0
+                            WHERE id = :termTaxonomy;");
+                        $query->bindValue(':termTaxonomy', $formerTermTaxonomy, PDO::PARAM_STR);
+                    }
                 }
             }
+        } else {
+            //remove todos
         }
 
     }
@@ -368,9 +430,9 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         return $data;
     }
 
-    public function workHasTheme($workId)
+    public function workHasThemes($workId)
     {
-        $query = $this->db->prepare('SELECT tx.term_id
+        $query = $this->db->prepare('SELECT tx.id, tx.term_id
                 FROM moxca_terms_relationships tr
                 LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 WHERE tr.object = :workId
@@ -378,14 +440,13 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
         $query->bindValue(':workId', $workId, PDO::PARAM_INT);
         $query->execute();
+        $resultPDO = $query->fetchAll();
 
-        $result = $query->fetch();
-
-        if (!empty($result)) {
-            return $result['term_id'];
-        } else {
-            return false;
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[$row['id']] = $row['term_id'];
         }
+        return $data;
     }
 
 
@@ -408,6 +469,17 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
         }
 
         return $existsThemeWithTerm;
+
+    }
+
+    private function createCharacterIfNeeded($termId)
+    {
+        $existsCharacterWithTerm = $this->existsCharacter($termId);
+        if (!$existsCharacterWithTerm) {
+            $existsCharacterWithTerm = $this->insertCharacter($termId);
+        }
+
+        return $existsCharacterWithTerm;
 
     }
 
@@ -615,6 +687,40 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
             $this->insertRelationship($workId, $termTaxonomyId);
         }
     }
+
+    public function deleteCharacter($workId, $termId)
+    {
+
+        try {
+            if ($taxonomyId = $this->createWorkKeywordIfNeeded($termId)) {
+                $this->deleteRelationship($workId, $termId, 'character');
+                $this->decreaseTermTaxonomyCount($taxonomyId, 1);
+                return true;
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+        return false;
+
+    }
+
+    public function deleteTheme($workId, $termId)
+    {
+
+        try {
+            if ($taxonomyId = $this->createWorkKeywordIfNeeded($termId)) {
+                $this->deleteRelationship($workId, $termId, 'theme');
+                $this->decreaseTermTaxonomyCount($taxonomyId, 1);
+                return true;
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+        return false;
+
+    }
+
+
 
 
 

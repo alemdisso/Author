@@ -1,13 +1,13 @@
 <?php
-class Author_Form_CharacterAdd extends Zend_Form
+class Author_Form_ThemeAdd extends Zend_Form
 {
     public function init()
     {
         parent::init();
 
         // initialize form
-        $this->setName('characterAddForm')
-            ->setAction('/admin/work/create-character')
+        $this->setName('themeAddForm')
+            ->setAction('/admin/work/create-theme')
             ->setMethod('post');
 
         $element = new Zend_Form_Element_Hidden('id');
@@ -17,32 +17,32 @@ class Author_Form_CharacterAdd extends Zend_Form
         $element->setDecorators(array('ViewHelper'));
 
         $mapper = new Author_Collection_TaxonomyMapper();
-        $rawLabelsArray = $mapper->getAllCharactersAlphabeticallyOrdered();
+        $rawLabelsArray = $mapper->getAllThemesAlphabeticallyOrdered();
 
         $view = new Zend_View();
-        $charactersArray = array("0" => $view->translate("#(choose)"));
+        $themesArray = array("0" => $view->translate("#(choose)"));
 
         foreach($rawLabelsArray as $k => $tagArray) {
-            $charactersArray[$k] = $tagArray['term'];
+            $themesArray[$k] = $tagArray['term'];
         }
 
 
-        $element = new Zend_Form_Element_Select('existingCharacter');
-        $element->setLabel('#Characters')
+        $element = new Zend_Form_Element_Select('existingTheme');
+        $element->setLabel('#Themes')
                 ->setDecorators(array(
                     'ViewHelper',
                     'Errors',
                     array(array('data' => 'HtmlTag'), array('tagClass' => 'div', 'class' => 'inputAdmin')),
                     array('Label', array('tag' => 'div', 'tagClass' => 'labelAdmin')),
                 ))
-		->setMultiOptions($charactersArray)
+		->setMultiOptions($themesArray)
                 ->setOptions(array('class' => 'choose'))
                 ->setRegisterInArrayValidator(false);
         $this->addElement($element);
 
-        $element = new Zend_Form_Element_Text('newCharacter');
+        $element = new Zend_Form_Element_Text('newTheme');
         $validator = new Moxca_Util_ValidString();
-        $element->setLabel(_('#New character:'))
+        $element->setLabel(_('#New theme:'))
                 ->setDecorators(array(
                     'ViewHelper',
                     'Errors',
@@ -69,7 +69,6 @@ class Author_Form_CharacterAdd extends Zend_Form
     }
 
     public function process($data) {
-
         if ($this->isValid($data) !== true) {
             throw new Author_Form_Exception('Invalid data!');
         } else {
@@ -78,14 +77,15 @@ class Author_Form_CharacterAdd extends Zend_Form
 
             $workId = $data['id'];
             $workObj = $workMapper->findById($workId);
-            if ($data['existingCharacter']) {
-                $workObj->addCharacter($data['existingCharacter']);
 
-            } else if ($data['newCharacter'] != "") {
+            if ($data['existingTheme'] > 0) {
+                $workObj->addTheme($data['existingTheme']);
+
+            } else if ($data['newTheme'] != "") {
                 $taxonomyMapper = new Author_Collection_TaxonomyMapper($db);
-                $termId = $taxonomyMapper->findTermAndInsertIfNew($data['newCharacter']);
-                //die("vou add charac $termId");
-                $workObj->addCharacter($termId);
+                $termId = $taxonomyMapper->findTermAndInsertIfNew($data['newTheme']);
+                //die("vou add theme $termId");
+                $workObj->addTheme($termId);
             }
 
             $workMapper->update($workObj);

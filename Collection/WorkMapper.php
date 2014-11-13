@@ -75,8 +75,8 @@ class Author_Collection_WorkMapper
 
         $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
 
-        if ($obj->getTheme()) {
-            $taxonomyMapper->updateWorkThemeRelationship($obj);
+        if ($obj->getThemes()) {
+            $taxonomyMapper->updateWorkThemesRelationships($obj);
         }
 
         if ($obj->getCharacters()) {
@@ -120,7 +120,8 @@ class Author_Collection_WorkMapper
         $this->setAttributeValue($obj, $result['type'], 'type');
 
         $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
-        $this->setAttributeValue($obj, $taxonomyMapper->findThemeByWorkId($id), 'theme');
+//        $this->setAttributeValue($obj, $taxonomyMapper->findThemeByWorkId($id), 'theme');
+        $this->setAttributeValue($obj, $taxonomyMapper->workHasThemes($id), 'themes');
 
         $this->setAttributeValue($obj, $taxonomyMapper->workHasCharacters($id), 'characters');
 
@@ -177,33 +178,6 @@ class Author_Collection_WorkMapper
         $taxonomyMapper->purgeDeletedObject($workId, 'theme');
         $taxonomyMapper->purgeDeletedObject($workId, 'character');
         $taxonomyMapper->purgeDeletedObject($workId, 'work_keyword');
-
-//        $query = $this->db->prepare('DELETE FROM moxca_terms_relationships
-//                USING moxca_terms_relationships, moxca_terms_taxonomy
-//                WHERE moxca_terms_relationships.object = :id
-//                AND moxca_terms_taxonomy.id = moxca_terms_relationships.term_taxonomy
-//                AND moxca_terms_taxonomy.taxonomy =  \'theme\'');
-//        $query->bindValue(':id', $workId, PDO::PARAM_STR);
-//        $query->execute();
-//        $themesDeleted = $query->rowCount();
-//
-//        if ($themesDeleted > 0) {
-//            $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = count - :deleted
-//                WHERE id = :termTaxonomy;");
-//            $query->bindValue(':termTaxonomy', $themeTaxonomyId, PDO::PARAM_STR);
-//            $query->bindValue(':deleted', $themesDeleted, PDO::PARAM_INT);
-//            try {
-//                $query->execute();
-//            } catch (Exception $e) {
-//                $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = 0
-//                    WHERE id = :termTaxonomy;");
-//                $query->bindValue(':termTaxonomy', $themeTaxonomyId, PDO::PARAM_STR);
-//                $query->execute();
-//            }
-//        }
-
-
-
 
         unset($this->identityMap[$obj]);
 

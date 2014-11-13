@@ -9,7 +9,7 @@ class Author_Collection_Work {
     protected $summary;
     protected $description;
     protected $type;
-    protected $theme;
+    protected $themes;
     protected $characters;
     protected $keywords;
 
@@ -21,7 +21,7 @@ class Author_Collection_Work {
         $this->summary = "";
         $this->description = "";
         $this->type = null;
-        $this->theme = null;
+        $this->themes = array();
         $this->characters = array();
         $this->keywords = array();
 
@@ -80,22 +80,42 @@ class Author_Collection_Work {
         }
     } //SetSummary
 
-    public function getTheme()
-    {
-        return $this->theme;
-    } //getTheme
+//    public function getTheme()
+//    {
+//        return $this->theme;
+//    } //getTheme
+//
+//    public function setTheme($theme)
+//    {
+//        $validator = new Moxca_Util_ValidPositiveDecimal();
+//        if ($validator->isValid($theme)) {
+//            if ($this->theme != $theme) {
+//                $this->theme = $theme;
+//            }
+//        } else {
+//            throw new Author_Collection_WorkException("This ($theme) is not a valid theme.");
+//        }
+//    } //SetTheme
+//
 
-    public function setTheme($theme)
+    public function getThemes()
     {
-        $validator = new Moxca_Util_ValidPositiveDecimal();
-        if ($validator->isValid($theme)) {
-            if ($this->theme != $theme) {
-                $this->theme = $theme;
+        return $this->themes;
+    } //getThemes
+
+    public function addTheme($termId)
+    {
+        if (isset($this->themes)) {
+            $values = array_flip($this->themes);
+            if (!isset($values[$termId])) {
+                $this->themes[] = $termId;
             }
         } else {
-            throw new Author_Collection_WorkException("This ($theme) is not a valid theme.");
+            $this->themes[] = $termId;
         }
-    } //SetTheme
+
+    } //getThemes
+
 
     public function getTitle($raw = false)
     {

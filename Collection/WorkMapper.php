@@ -174,7 +174,7 @@ class Author_Collection_WorkMapper
         $workId = $this->identityMap[$obj];
 
         $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
-        $themeTaxonomyId = $taxonomyMapper->findTaxonomyByTheme($obj->getTheme());
+        //$themeTaxonomyId = $taxonomyMapper->findTaxonomyByTheme($obj->getTheme());
         $taxonomyMapper->purgeDeletedObject($workId, 'theme');
         $taxonomyMapper->purgeDeletedObject($workId, 'character');
         $taxonomyMapper->purgeDeletedObject($workId, 'work_keyword');

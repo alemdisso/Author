@@ -44,9 +44,9 @@ class Author_Collection_WorkMapper
         $obj->setId((int)$this->db->lastInsertId());
         $this->identityMap[$obj] = $obj->getId();
 
-        if ($obj->getTheme()) {
+        if ($obj->getThemes()) {
             $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
-            $taxonomyMapper->updateWorkThemeRelationship($obj);
+            $taxonomyMapper->updateWorkThemesRelationship($obj);
         }
 
     }

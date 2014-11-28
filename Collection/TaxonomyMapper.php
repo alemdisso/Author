@@ -196,10 +196,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 // tudo novo, é só incluir
                 if (count($newKeywords) > 0) {
                     $this->insertListOfKeywords($workId, $newKeywords);
-//                    foreach($newKeywords as $k => $termId) {
-//                        $termTaxonomyId = $this->createKeywordIfNeeded($termId);
-//                        $this->insertRelationship($workId, $termTaxonomyId);
-//                    }
                 }
             } else {
                 //descobre se caiu algum
@@ -219,10 +215,6 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 $toInclude = array_diff($newKeywords, $formerKeywords);
                 if ((is_array($toInclude)) && (count($toInclude))) {
                     $this->insertListOfKeywords($workId, $toInclude);
-//                    foreach($toInclude as $k => $termId) {
-//                        $termTaxonomyId = $this->createKeywordIfNeeded($termId);
-//                        $this->insertRelationship($workId, $termTaxonomyId);
-//                    }
                 }
 
                 if ($newKeywords != $formerKeywords) {
@@ -338,21 +330,24 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
 
     }
 
-    public function getAllCharactersAlphabeticallyOrdered()
+    public function getAllCharactersAlphabeticallyOrdered($active=false)
     {
+        if($active) {
+            $justActive = " AND tx.count > 0 ";
+        } else {
+            $justActive = "";
+        }
+
         $query = $this->db->prepare('SELECT t.id, t.term, t.uri
                 FROM moxca_terms t
                 LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
-                WHERE tx.taxonomy =  \'character\' ORDER BY t.term');
+                WHERE tx.taxonomy = \'character\'' .  $justActive . ' ORDER BY t.term');
         $query->execute();
         $resultPDO = $query->fetchAll();
         $data = array();
         foreach ($resultPDO as $row) {
             $data[$row['id']] = array('uri' => $row['uri'], 'term' => $row['term']);
         }
-//        foreach ($resultPDO as $row) {
-//            $data[$row['uri']] = $row['term'];
-//        }
         return $data;
 
     }
@@ -692,7 +687,7 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
     {
 
         try {
-            if ($taxonomyId = $this->createWorkKeywordIfNeeded($termId)) {
+            if ($taxonomyId = $this->createCharacterIfNeeded($termId)) {
                 $this->deleteRelationship($workId, $termId, 'character');
                 $this->decreaseTermTaxonomyCount($taxonomyId, 1);
                 return true;
@@ -721,6 +716,30 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
     }
 
 
+ private function faxinaCount()
+ {
+
+        $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = 0 WHERE 1");
+        $query->execute();
+
+        $query = $this->db->prepare("SELECT term_taxonomy, count(term_taxonomy) as count FROM `moxca_terms_relationships` WHERE 1 GROUP BY term_taxonomy");
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+
+
+        foreach ($resultPDO as $key => $row) {
+            $query = $this->db->prepare("UPDATE moxca_terms_taxonomy SET count = :newCount"
+                    . " WHERE id = :id;");
+
+            $query->bindValue(':newCount', $row['count'], PDO::PARAM_STR);
+            $query->bindValue(':id', $row['term_taxonomy'], PDO::PARAM_STR);
+            $query->execute();
+        }
+        $query = $this->db->prepare("DELETE FROM moxca_terms_taxonomy WHERE count < 1");
+        $query->execute();
+
+
+ }
 
 
 

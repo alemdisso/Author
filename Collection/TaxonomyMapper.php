@@ -601,7 +601,8 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 LEFT JOIN moxca_terms_taxonomy tx ON tr.term_taxonomy = tx.id
                 LEFT JOIN moxca_terms tt ON tx.term_id = tt.id
                 WHERE tt.uri = :theme
-                AND tx.taxonomy =  \'theme\'');
+                AND tx.taxonomy =  \'theme\'
+                ORDER BY w.title');
 
         $query->bindValue(':theme', $theme, PDO::PARAM_STR);
         $query->execute();
@@ -661,6 +662,27 @@ class Author_Collection_TaxonomyMapper extends Moxca_Taxonomy_TaxonomyMapper
                 LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
                 LEFT JOIN moxca_terms_relationships tr ON tx.id = tr.term_taxonomy
                 WHERE tx.taxonomy ='work_keyword'
+                AND tr.object = :object ORDER BY t.term");
+        $query->bindValue(':object', $work, PDO::PARAM_INT);
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+        $data = array();
+        foreach ($resultPDO as $row) {
+            $data[$row['uri']] = $row['term'];
+        }
+        return $data;
+
+
+    }
+
+    public function getThemesRelatedToWork($work)
+    {
+
+        $query = $this->db->prepare("SELECT t.id, t.term, t.uri
+                FROM moxca_terms t
+                LEFT JOIN moxca_terms_taxonomy tx ON t.id = tx.term_id
+                LEFT JOIN moxca_terms_relationships tr ON tx.id = tr.term_taxonomy
+                WHERE tx.taxonomy ='theme'
                 AND tr.object = :object ORDER BY t.term");
         $query->bindValue(':object', $work, PDO::PARAM_INT);
         $query->execute();

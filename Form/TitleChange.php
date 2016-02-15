@@ -52,13 +52,24 @@ class Author_Form_TitleChange extends Zend_Form
         } else {
             $db = Zend_Registry::get('db');
             $workMapper = new Author_Collection_WorkMapper($db);
+            $editionMapper = new Author_Collection_EditionMapper($db);
 
             $workId = $data['id'];
             $workObj = $workMapper->findById($workId);
-
+            
             $workObj->setTitle($data['title']);
 
             $workMapper->update($workObj);
+            
+            $editions= $editionMapper->getAllEditionsOfWork($workId);
+            
+            foreach($editions as $editionId) {
+                $loopEditionObj = $editionMapper->findById($editionId);
+                $loopEditionObj->setTitle($data['title']);
+                $editionMapper->update($loopEditionObj);
+                unset($loopEditionObj);
+            }
+            
             return $workObj;
         }
     }

@@ -9,6 +9,7 @@ class Author_Collection_Work {
     protected $summary;
     protected $description;
     protected $type;
+    protected $status;
     protected $themes;
     protected $characters;
     protected $keywords;
@@ -21,6 +22,7 @@ class Author_Collection_Work {
         $this->summary = "";
         $this->description = "";
         $this->type = null;
+        $this->status = 0;
         $this->themes = array();
         $this->characters = array();
         $this->keywords = array();
@@ -196,6 +198,33 @@ class Author_Collection_Work {
     public function getType()
     {
         return $this->type;
+    }
+
+    public function setStatus($status)
+    {
+        switch ($status) {
+            case Author_Collection_WorkStatusConstants::STATUS_NIL:
+            case Author_Collection_WorkStatusConstants::STATUS_RAW:
+            case Author_Collection_WorkStatusConstants::STATUS_RESIZED:
+                $this->status = (int)$status;
+                break;
+
+            case null:
+            case "":
+            case 0:
+            case false:
+                $this->status = null;
+                break;
+
+            default:
+                throw new Author_Collection_WorkException("Invalid work status.");
+                break;
+        }
+    }
+
+    public function getStatus()
+    {
+        return $this->status;
     }
 
     public function getUri()

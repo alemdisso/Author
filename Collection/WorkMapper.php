@@ -29,8 +29,8 @@ class Author_Collection_WorkMapper
     public function insert(Author_Collection_Work $obj)
     {
 
-        $query = $this->db->prepare("INSERT INTO author_collection_works (uri, title, prefix, description, summary, type)
-            VALUES (:uri, :title, :prefix, :description, :summary, :type)");
+        $query = $this->db->prepare("INSERT INTO author_collection_works (uri, title, prefix, description, summary, type, status)
+            VALUES (:uri, :title, :prefix, :description, :summary, :type, :status)");
 
         $query->bindValue(':uri', $obj->getUri(), PDO::PARAM_STR);
         $query->bindValue(':title', $obj->getTitle(true), PDO::PARAM_STR);
@@ -38,6 +38,7 @@ class Author_Collection_WorkMapper
         $query->bindValue(':description', $obj->getDescription(), PDO::PARAM_STR);
         $query->bindValue(':summary', $obj->getSummary(), PDO::PARAM_STR);
         $query->bindValue(':type', $obj->getType(), PDO::PARAM_STR);
+        $query->bindValue(':status', $obj->getStatus(), PDO::PARAM_STR);
 
         $query->execute();
 
@@ -57,7 +58,7 @@ class Author_Collection_WorkMapper
             throw new Author_Collection_WorkMapperException('Object has no ID, cannot update.');
         }
 
-        $query = $this->db->prepare("UPDATE author_collection_works SET uri = :uri, title = :title, prefix = :prefix, description = :description, summary = :summary, type = :type WHERE id = :id;");
+        $query = $this->db->prepare("UPDATE author_collection_works SET uri = :uri, title = :title, prefix = :prefix, description = :description, summary = :summary, type = :type, status = :status WHERE id = :id;");
 
         $query->bindValue(':uri', $obj->getUri(), PDO::PARAM_STR);
         $query->bindValue(':title', $obj->getTitle(true), PDO::PARAM_STR);
@@ -65,6 +66,7 @@ class Author_Collection_WorkMapper
         $query->bindValue(':description', $obj->getDescription(), PDO::PARAM_STR);
         $query->bindValue(':summary', $obj->getSummary(), PDO::PARAM_STR);
         $query->bindValue(':type', $obj->getType(), PDO::PARAM_STR);
+        $query->bindValue(':status', $obj->getStatus(), PDO::PARAM_STR);
         $query->bindValue(':id', $this->identityMap[$obj], PDO::PARAM_STR);
 
         try {
@@ -99,7 +101,7 @@ class Author_Collection_WorkMapper
             $this->identityMap->next();
         }
 
-        $query = $this->db->prepare('SELECT uri, title, prefix, description, summary, type FROM author_collection_works WHERE id = :id;');
+        $query = $this->db->prepare('SELECT uri, title, prefix, description, summary, type, status FROM author_collection_works WHERE id = :id;');
         $query->bindValue(':id', $id, PDO::PARAM_STR);
         $query->execute();
 
@@ -118,6 +120,7 @@ class Author_Collection_WorkMapper
         $this->setAttributeValue($obj, $result['description'], 'description');
         $this->setAttributeValue($obj, $result['summary'], 'summary');
         $this->setAttributeValue($obj, $result['type'], 'type');
+        $this->setAttributeValue($obj, $result['status'], 'status');
 
         $taxonomyMapper = new Author_Collection_TaxonomyMapper($this->db);
 //        $this->setAttributeValue($obj, $taxonomyMapper->findThemeByWorkId($id), 'theme');
@@ -196,6 +199,21 @@ class Author_Collection_WorkMapper
     {
         $query = $this->db->prepare('SELECT id FROM author_collection_works WHERE type=:type;');
         $query->bindValue(':type', $type, PDO::PARAM_STR);
+        $query->execute();
+        $resultPDO = $query->fetchAll();
+
+        $result = array();
+        foreach ($resultPDO as $row) {
+            $result[] = $row['id'];
+        }
+        return $result;
+
+    }
+
+    public function getAllIdsOfStatus($status)
+    {
+        $query = $this->db->prepare('SELECT id FROM author_collection_works WHERE status=:status;');
+        $query->bindValue(':status', $status, PDO::PARAM_STR);
         $query->execute();
         $resultPDO = $query->fetchAll();
 

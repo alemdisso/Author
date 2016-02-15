@@ -36,7 +36,7 @@ class Author_Form_EditionCreate extends Zend_Form
                     array(array('data' => 'HtmlTag'), array('tagClass' => 'div', 'class' => 'inputAdmin')),
                     array('Label', array('tag' => 'div', 'tagClass' => 'labelAdmin')),
                 ))
-                ->setDestination(APPLICATION_PATH . '/../public/img/editions/raw');
+                ->setDestination($_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/raw');
         // ensure only 1 file
         $element->addValidator('Count', false, 1);
         $element->addValidator('Size', false, 5242880);
@@ -196,7 +196,6 @@ class Author_Form_EditionCreate extends Zend_Form
             $db = Zend_Registry::get('db');
             $workMapper = new Author_Collection_WorkMapper($db);
 
-
             $work = new Author_Collection_Work();
 
             $work->SetTitle($data['title']);
@@ -206,6 +205,40 @@ class Author_Form_EditionCreate extends Zend_Form
 
             if (!$this->cover->receive()) {
                 throw new Author_Form_Exception('Something wrong receiving cover file');
+            } else {
+                
+                $coverFileName = $work->getUri() . ".png";
+                
+                $fileName = strtolower(strrchr($this->cover->getFileName(), '/'));
+                list($width, $height) = getimagesize($_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/raw' . $fileName);
+                $this->resizeAndSave($_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/raw'
+                        , 198
+                        , 198
+                        , $_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/tb/'
+                        , $coverFileName);
+                
+                if (($width > 380) || ($height > 380)) {
+                    $this->resizeAndSave($_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/raw' . $fileName
+                            , 381
+                            , 381
+                            , $_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/md/'
+                            , $coverFileName);
+
+                } else {
+                    $this->resizeAndSave($_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/raw' . $fileName
+                            , $width
+                            , $height
+                            , $_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/md/'
+                            , $coverFileName);
+
+                }
+
+                $this->resizeAndSave($_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/raw' . $fileName
+                        , $width
+                        , $height
+                        , $_SERVER['DOCUMENT_ROOT'] . '/public/img/editions/new/'
+                        , $coverFileName);
+                
             }
 
             $workMapper->insert($work);
@@ -220,17 +253,31 @@ class Author_Form_EditionCreate extends Zend_Form
             $edition->setCoverDesigner($data['coverDesigner']);
             $edition->setCountry('BR');
 
-            $location = $this->cover->getFileName();
-            $location = str_replace('\\', '/', $location);
-            $tmpArray = explode('/', $location);
-            $coverFileName = end($tmpArray);
-            if ($coverFileName != "") {
+//            $location = $this->cover->getFileName();
+//            $location = str_replace('\\', '/', $location);
+//            $tmpArray = explode('/', $location);
+//            $coverFileName = end($tmpArray);
+//            if ($coverFileName != "") {
+//                $edition->setCover($coverFileName);
+//            }
                 $edition->setCover($coverFileName);
-            }
 
             $editionMapper->insert($edition);
 
             return $edition;
         }
     }
+    
+    private function resizeAndSave($rawImageFilePath, $width, $height, $whereToSave, $newImageFilename="")
+    {
+
+        $rsz = new Moxca_Util_Resize($rawImageFilePath);
+        $rsz->resizeImage($width, $height);
+        $rsz->saveImage($whereToSave . '/' . $newImageFilename);
+        unset($rsz);
+        
+    }
+    
+    
+    
  }

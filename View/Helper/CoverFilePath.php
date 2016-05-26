@@ -2,13 +2,12 @@
 
 class Author_View_Helper_CoverFilePath extends Zend_View_Helper_Abstract
 {
-    public function coverFilePath(Author_Collection_Edition $editionObj, $noImgFilename="no_img.png", $type="md")
+    public function coverFilePath(Author_Collection_Edition $editionObj, $noImgFilePath="/img/no_img.png", $type="md")
     {
         
         $filename = $editionObj->getCover();
-        $noImagePath = "/img/$noImgFilename";
         if ($filename == "") {
-            $coverFilePath = $noImagePath;
+            $coverFileRelativePath = $noImgFilePath;
         } else {
             switch ($type) {
                 case "tb":
@@ -21,14 +20,16 @@ class Author_View_Helper_CoverFilePath extends Zend_View_Helper_Abstract
                     $folder = "md";
                     break;
             }
-            $coverFilePath = '/img/editions/' . $folder . '/' . $filename;
+            $coverFileRelativePath = '/img/editions/' . $folder . '/' . $filename;
         }
         
-        if (!file_exists(APPLICATION_PATH . '/../public/' . $coverFilePath)) {
-            $coverFilePath = $noImagePath;
+        $coverFileAbsolutPath = APPLICATION_PATH . '/../public/' . $coverFileRelativePath;
+        
+        if ((!file_exists($coverFileAbsolutPath)) && ($noImgFilePath != "")) {
+            $coverFileRelativePath = $noImgFilePath;
         }
  
-        return $coverFilePath;
+        return $coverFileRelativePath;
     }
 }
 
